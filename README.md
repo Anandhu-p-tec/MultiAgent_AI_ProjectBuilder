@@ -25,6 +25,159 @@ This project implements an **AI Agent System** that converts a short, high-level
 
 ---
 
+## 🧠 System Workflow — Mermaid Diagram
+
+```mermaid
+flowchart TD
+
+%% ===============================
+%% FRONTEND
+%% ===============================
+U[🧑‍💻 User / Frontend (React + Vite)]
+C[🌐 Coordinator API (FastAPI)]
+
+%% ===============================
+%% BACKEND CORE
+%% ===============================
+Q[(🔁 Redis Queue / RQ Workers)]
+DB[(🗄️ SQLite DB)]
+VDB[(🧩 Vector DB (Chroma / FAISS))]
+
+%% ===============================
+%% AGENTS
+%% ===============================
+subgraph AGENTS[🤖 Multi-Agent Worker Pool]
+BA[Backend Agent]
+FA[Frontend Agent]
+RA[Review Agent]
+end
+
+%% ===============================
+%% EXTERNAL SERVICES
+%% ===============================
+subgraph LLM[🔮 LLM Providers]
+G[Gemini]
+O[Ollama]
+H[HuggingFace]
+end
+
+%% ===============================
+%% OUTPUT
+%% ===============================
+OUT[(📦 Generated Project\nFiles / Repo Artifacts)]
+
+%% ===============================
+%% FLOW CONNECTIONS
+%% ===============================
+
+U -->|1️⃣ Submit project brief| C
+C -->|2️⃣ Persist metadata| DB
+C -->|3️⃣ Decompose tasks & enqueue jobs| Q
+Q -->|4️⃣ Dispatch jobs| AGENTS
+
+%% Agents interacting with resources
+AGENTS -->|Read/write context| VDB
+AGENTS -->|LLM calls for code/content| LLM
+AGENTS -->|Return generated code| C
+
+%% Coordinator assembles project
+C -->|5️⃣ Assemble outputs| OUT
+OUT -->|6️⃣ Send final result| U
+
+%% Feedback / review loop
+RA -->|Quality check| Q
+
+%% Styling & grouping
+classDef agent fill:#f6faff,stroke:#90a4ae,stroke-width:1px;
+classDef db fill:#fff7e6,stroke:#d17d00,stroke-width:1px;
+classDef ext fill:#f5eaff,stroke:#8a2be2,stroke-width:1px;
+classDef core fill:#e6f7ff,stroke:#007acc,stroke-width:1px;
+classDef output fill:#e8ffe6,stroke:#00aa00,stroke-width:1px;
+
+class AGENTS,BA,FA,RA agent;
+class Q,DB,VDB db;
+class LLM,G,O,H ext;
+class C core;
+class OUT output;
+
+```
+**Core idea (brief):**  
+A single *Coordinator* (FastAPI) receives a brief from the frontend, decomposes it into tasks, enqueues work, and oversees specialized sub-agents (backend-, frontend-, and review-agents). Agents run as asynchronous workers, call LLM providers to generate code and content, store embeddings in a vector DB, and return artifacts for assembly. :contentReference[oaicite:1]{index=1}
+
+---
+
+## How the workflow flows (step-by-step)
+
+1. **User submits a brief (Frontend UI).**  
+   The React/Vite frontend collects the brief and submits it to the backend Coordinator via HTTP. :contentReference[oaicite:2]{index=2}
+
+2. **Coordinator receives & persists the brief.**  
+   The Coordinator endpoint validates and persists metadata (e.g., to SQLite). It then enqueues one or more async jobs representing decomposed tasks. :contentReference[oaicite:3]{index=3}
+
+3. **Task decomposition.**  
+   The Coordinator either directly runs a decomposition step or enqueues a decomposition job. This step splits the high-level brief into concrete tasks (e.g., “create auth API”, “create login UI component”, “add DB model for X”).
+
+4. **Jobs queued (Redis + RQ).**  
+   Each task is enqueued to Redis (RQ worker queue). Worker processes (agent workers) pull jobs from Redis and begin execution. The project README lists Redis + RQ as the job queue / worker approach. :contentReference[oaicite:4]{index=4}
+
+5. **Agent execution (workers).**  
+   Each agent (Backend Agent / Frontend Agent / Review Agent / etc.):
+   - Receives the job payload (task spec + context).
+   - Calls an LLM provider (Gemini by default; Ollama or Hugging Face as fallback/options) to generate code or spec text.
+   - Optionally generates embeddings from LLM outputs and persists/retrieves them in/from the vector DB (Chroma default / FAISS fallback).
+   - Returns generated artifacts (code snippets, file trees, tests) to the Coordinator (via job result, DB, or direct file output).
+
+6. **Review & iteration.**  
+   The Coordinator (or a Review Agent) inspects generated outputs, runs quick validations or unit-test generation, and — if necessary — enqueues refinement jobs.
+
+7. **Assemble final project.**  
+   Once tasks are approved, the Coordinator assembles the files into a project scaffold (folder structure / repo) and exposes them for download or preview. For local development you can run the backend and frontend as described in the quickstart. :contentReference[oaicite:5]{index=5}
+
+---
+
+## Agents & responsibilities (concise)
+- **Coordinator Agent (FastAPI)**  
+  - Receives briefs and user requests.  
+  - Decomposes briefs to tasks.  
+  - Enqueues jobs and orchestrates end-to-end flow. :contentReference[oaicite:6]{index=6}
+
+- **Backend Agent**  
+  - Generates APIs, DB models, and server-side wiring (FastAPI + Python).  
+  - Validates generated code and writes to artifact storage.
+
+- **Frontend Agent**  
+  - Generates UI components (React + TypeScript + Tailwind + Vite).  
+  - Produces responsive UI code and scaffolding.
+
+- **Review / Quality Agent**  
+  - Reviews agent outputs for style/consistency; may add unit tests or linting suggestions.
+
+- **Vector/Embedding Agent (logic)**  
+  - Converts candidate docs/snippets to embeddings and stores/retrieves them from Chroma/FAISS to surface context or prior knowledge.
+
+- **Worker Pool (RQ workers)**  
+  - Runs agent code asynchronously; monitors and reports job statuses to the Coordinator (via Redis/RQ).
+
+---
+
+## Communication channels (how components talk)
+
+- **Frontend ↔ Backend:** HTTP(S) requests (REST endpoints).  
+- **Coordinator ↔ Workers:** Redis job queue (RQ). Coordinator enqueues jobs; workers pull and push results. :contentReference[oaicite:7]{index=7}  
+- **Agents ↔ LLM Providers:** HTTPS API calls to Gemini / Ollama / Hugging Face. :contentReference[oaicite:8]{index=8}  
+- **Agents ↔ Vector DB:** gRPC/HTTP or SDK calls to Chroma (or FAISS locally) to store/retrieve embeddings. :contentReference[oaicite:9]{index=9}  
+- **Coordinator ↔ DB:** SQLite (or configured DB) for metadata, job tracking, and artifact indexes. :contentReference[oaicite:10]{index=10}
+
+> Note: Real-time progress reporting to the frontend (SSE / WebSockets) is a common enhancement pattern but not necessarily implemented by default. If you want live progress, add a websocket/SSE endpoint and emit job status messages from the worker callbacks.
+
+---
+
+## Folder overview (what each top folder does)
+- `backend/` — **FastAPI** app and orchestration code: endpoints, coordinator logic, LLM client wrappers, worker scripts, DB models, configuration and scripts to run the RQ workers and vector-store interactions. Run locally with:
+  ```bash
+  uvicorn backend.app.main:app --reload
+
+
 ## 🚀 Quick Start (Windows)
 
 See `README-QUICKSTART.md` for PowerShell setup instructions.
