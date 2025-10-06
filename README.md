@@ -23,7 +23,52 @@ This project implements an **AI Agent System** that converts a short, high-level
 | Vector Store | Chroma (default) / FAISS (fallback)                                    |
 | Job Queue    | Redis + RQ (or APScheduler fallback)                                   |
 
+
 ---
+### 🗂️ Folder Structure Overview
+```
+multiagent-ai-project-builder/
+│
+├── .gitignore
+├── README.md
+├── requirements.txt
+├── .env.example               ← Example environment variables
+│
+├── backend/                   ← Core backend logic (FastAPI + AI orchestration)
+│   ├── main.py                ← FastAPI app entrypoint
+│   ├── requirements.txt
+│   ├── app/
+│   │   ├── api/
+│   │   │   └── brief.py       ← API endpoints for project brief submission & ZIP download
+│   │   ├── models/
+│   │   │   └── project.py     ← SQLAlchemy / Pydantic models (Project & Tasks)
+│   │   ├── services/
+│   │   │   ├── coordinator.py ← Coordinates the multi-agent flow
+│   │   │   ├── llm_adapter.py ← Interface for LLM APIs (Gemini, Ollama, HuggingFace, etc.)
+│   │   │   ├── task_builder.py← Decomposes briefs & builds directory/file structure
+│   │   │   └── utils.py       ← Helper utilities
+│   │   └── db/
+│   │       └── database.py    ← SQLAlchemy database configuration
+│   │
+│   ├── generated_projects/    ← AI-generated project outputs (auto-created folders)
+│   │   └── build-a-task-management-app/
+│   │       ├── backend/
+│   │       ├── frontend/
+│   │       └── README.md
+│   │
+│   └── tests/                 ← Unit tests for API
+│       └── test_api.py
+│
+├── frontend/                  ← React + Vite frontend for user input and results
+│   ├── src/
+│   │   ├── App.tsx            ← UI for entering briefs and downloading results
+│   │   ├── api/client.ts      ← Axios client to call FastAPI backend
+│   │   ├── components/        ← UI Components (form, task list, download)
+│   │   └── styles/main.css
+│   └── public/favicon.ico
+│
+└── docker-compose.yml         ← Optional: container setup for backend + frontend
+```
 
 ## 🧠 System Workflow — Mermaid Diagram
 
