@@ -32,16 +32,14 @@ flowchart TD
 
 %% ===== Nodes =====
 U["User / Frontend<br/>React + Vite"]
-
-%% Coordinator center
 C["Coordinator API<br/>FastAPI"]
 
-%% Side components
+%% Create spacer levels to control layout
 DB["SQLite Database"]
+SP1[" "]:::invisible
 Q["Redis Queue / RQ Workers"]
-VDB["Vector DB<br/>Chroma or FAISS"]
 
-%% Bottom output
+VDB["Vector DB<br/>Chroma or FAISS"]
 OUT["Generated Project<br/>Files & Artifacts"]
 
 %% ===== Agents =====
@@ -61,9 +59,10 @@ end
 %% ===== Flow =====
 U -->|1 Submit brief| C
 
-%% make DB appear to the left and Queue to the right
+%% Place DB and Q below Coordinator with spacing
 C -->|2 Store metadata| DB
-C -->|3 Decompose & enqueue tasks| Q
+C --> SP1
+SP1 -->|3 Decompose & enqueue tasks| Q
 
 Q -->|4 Workers pull jobs| AGENTS
 
@@ -76,22 +75,20 @@ OUT -->|6 Deliver to user| U
 
 RA -->|Quality review / feedback| Q
 
-%% invisible link to help layout: keeps DB on left, Q on right
-DB -.-> C
-C -.-> Q
-
 %% ===== Styles =====
 classDef db fill:#fff2cc,stroke:#d6b656,color:#000;
 classDef agent fill:#eef6ff,stroke:#4472c4,color:#000;
 classDef ext fill:#ede7f6,stroke:#673ab7,color:#000;
 classDef core fill:#e1f5fe,stroke:#0288d1,color:#000;
 classDef output fill:#e8f5e9,stroke:#43a047,color:#000;
+classDef invisible fill:none,stroke:none;
 
-class Q,DB,VDB db;
+class DB,VDB,Q db;
 class AGENTS,BA,FA,RA agent;
 class LLM,G,O,H ext;
 class C core;
 class OUT output;
+
 
 
 ```
