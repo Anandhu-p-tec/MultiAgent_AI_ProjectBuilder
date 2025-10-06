@@ -30,33 +30,36 @@ This project implements an **AI Agent System** that converts a short, high-level
 ```mermaid
 flowchart TD
 
-%% ========== FRONTEND ==========
+%% ===== FRONTEND =====
 U[User / Frontend (React + Vite)]
+
 C[Coordinator API (FastAPI)]
 
-%% ========== BACKEND CORE ==========
+%% ===== BACKEND CORE =====
 Q[(Redis Queue / RQ Workers)]
+
 DB[(SQLite Database)]
+
 VDB[(Vector DB - Chroma / FAISS)]
 
-%% ========== AGENTS ==========
-subgraph AGENTS[Multi-Agent Worker Pool]
-BA[Backend Agent]
-FA[Frontend Agent]
-RA[Review Agent]
+%% ===== AGENTS =====
+subgraph AGENTS [Multi-Agent Worker Pool]
+    BA[Backend Agent]
+    FA[Frontend Agent]
+    RA[Review Agent]
 end
 
-%% ========== LLM PROVIDERS ==========
-subgraph LLM[LLM Providers]
-G[Gemini]
-O[Ollama]
-H[HuggingFace]
+%% ===== LLM PROVIDERS =====
+subgraph LLM [LLM Providers]
+    G[Gemini]
+    O[Ollama]
+    H[HuggingFace]
 end
 
-%% ========== OUTPUT ==========
+%% ===== OUTPUT =====
 OUT[(Generated Project Files / Artifacts)]
 
-%% ========== FLOW CONNECTIONS ==========
+%% ===== FLOW CONNECTIONS =====
 U -->|1. Submit Project Brief| C
 C -->|2. Store Metadata| DB
 C -->|3. Decompose Tasks & Enqueue Jobs| Q
@@ -71,7 +74,7 @@ OUT -->|6. Return Final Result| U
 
 RA -->|Quality Review & Feedback| Q
 
-%% ========== STYLES ==========
+%% ===== STYLES =====
 classDef agent fill:#eef6ff,stroke:#4472c4,stroke-width:1px,color:#000;
 classDef db fill:#fff2cc,stroke:#d6b656,stroke-width:1px,color:#000;
 classDef core fill:#e1f5fe,stroke:#0288d1,stroke-width:1px,color:#000;
@@ -83,6 +86,7 @@ class Q,DB,VDB db;
 class C core;
 class LLM,G,O,H ext;
 class OUT output;
+
 
 ```
 **Core idea (brief):**  
