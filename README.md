@@ -30,62 +30,51 @@ This project implements an **AI Agent System** that converts a short, high-level
 ```mermaid
 flowchart TD
 
-%% ===== FRONTEND =====
-U[User / Frontend (React + Vite)]
+%% Nodes (one per line)
+U["User / Frontend<br/>React + Vite"]
+C["Coordinator API<br/>FastAPI"]
+DB["SQLite Database"]
+Q["Redis Queue / RQ Workers"]
+VDB["Vector DB<br/>Chroma or FAISS"]
+OUT["Generated Project<br/>Files & Artifacts"]
 
-C[Coordinator API (FastAPI)]
-
-%% ===== BACKEND CORE =====
-Q[(Redis Queue / RQ Workers)]
-
-DB[(SQLite Database)]
-
-VDB[(Vector DB - Chroma / FAISS)]
-
-%% ===== AGENTS =====
-subgraph AGENTS [Multi-Agent Worker Pool]
-    BA[Backend Agent]
-    FA[Frontend Agent]
-    RA[Review Agent]
+%% Agents as a subgraph (each agent on its own line)
+subgraph AGENTS
+  BA["Backend Agent"]
+  FA["Frontend Agent"]
+  RA["Review Agent"]
 end
 
-%% ===== LLM PROVIDERS =====
-subgraph LLM [LLM Providers]
-    G[Gemini]
-    O[Ollama]
-    H[HuggingFace]
+%% LLM providers as a subgraph
+subgraph LLM
+  G["Gemini"]
+  O["Ollama"]
+  H["HuggingFace"]
 end
 
-%% ===== OUTPUT =====
-OUT[(Generated Project Files / Artifacts)]
+%% Connections (each connection on its own line)
+U -->|1 Submit brief| C
+C -->|2 Store metadata| DB
+C -->|3 Decompose & enqueue tasks| Q
+Q -->|4 Workers pull jobs| AGENTS
 
-%% ===== FLOW CONNECTIONS =====
-U -->|1. Submit Project Brief| C
-C -->|2. Store Metadata| DB
-C -->|3. Decompose Tasks & Enqueue Jobs| Q
-Q -->|4. Dispatch Jobs| AGENTS
-
-AGENTS -->|Read/Write Context| VDB
+AGENTS -->|Read/write context| VDB
 AGENTS -->|Call LLM APIs| LLM
-AGENTS -->|Return Generated Code| C
+AGENTS -->|Return generated code| C
 
-C -->|5. Assemble Outputs| OUT
-OUT -->|6. Return Final Result| U
+C -->|5 Assemble outputs| OUT
+OUT -->|6 Deliver to user| U
 
-RA -->|Quality Review & Feedback| Q
+RA -->|Quality review / feedback| Q
 
-%% ===== STYLES =====
-classDef agent fill:#eef6ff,stroke:#4472c4,stroke-width:1px,color:#000;
-classDef db fill:#fff2cc,stroke:#d6b656,stroke-width:1px,color:#000;
-classDef core fill:#e1f5fe,stroke:#0288d1,stroke-width:1px,color:#000;
-classDef ext fill:#ede7f6,stroke:#673ab7,stroke-width:1px,color:#000;
-classDef output fill:#e8f5e9,stroke:#43a047,stroke-width:1px,color:#000;
-
-class AGENTS,BA,FA,RA agent;
+%% Minimal class styling (optional; GitHub supports this)
+classDef db fill:#fff2cc,stroke:#d6b656;
+classDef agent fill:#eef6ff,stroke:#4472c4;
+classDef ext fill:#ede7f6,stroke:#673ab7;
 class Q,DB,VDB db;
-class C core;
+class AGENTS,BA,FA,RA agent;
 class LLM,G,O,H ext;
-class OUT output;
+
 
 
 ```
