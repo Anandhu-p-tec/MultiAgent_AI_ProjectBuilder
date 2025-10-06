@@ -32,10 +32,16 @@ flowchart TD
 
 %% ===== Nodes =====
 U["User / Frontend<br/>React + Vite"]
+
+%% Coordinator center
 C["Coordinator API<br/>FastAPI"]
+
+%% Side components
 DB["SQLite Database"]
 Q["Redis Queue / RQ Workers"]
 VDB["Vector DB<br/>Chroma or FAISS"]
+
+%% Bottom output
 OUT["Generated Project<br/>Files & Artifacts"]
 
 %% ===== Agents =====
@@ -52,10 +58,13 @@ subgraph LLM
   H["HuggingFace"]
 end
 
-%% ===== Connections =====
+%% ===== Flow =====
 U -->|1 Submit brief| C
+
+%% make DB appear to the left and Queue to the right
 C -->|2 Store metadata| DB
 C -->|3 Decompose & enqueue tasks| Q
+
 Q -->|4 Workers pull jobs| AGENTS
 
 AGENTS -->|Read/write context| VDB
@@ -67,7 +76,11 @@ OUT -->|6 Deliver to user| U
 
 RA -->|Quality review / feedback| Q
 
-%% ===== Styles (with black font color) =====
+%% invisible link to help layout: keeps DB on left, Q on right
+DB -.-> C
+C -.-> Q
+
+%% ===== Styles =====
 classDef db fill:#fff2cc,stroke:#d6b656,color:#000;
 classDef agent fill:#eef6ff,stroke:#4472c4,color:#000;
 classDef ext fill:#ede7f6,stroke:#673ab7,color:#000;
@@ -79,7 +92,6 @@ class AGENTS,BA,FA,RA agent;
 class LLM,G,O,H ext;
 class C core;
 class OUT output;
-
 
 
 ```
