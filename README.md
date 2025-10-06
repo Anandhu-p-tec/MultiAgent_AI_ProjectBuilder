@@ -30,74 +30,58 @@ This project implements an **AI Agent System** that converts a short, high-level
 ```mermaid
 flowchart TD
 
-%% ===============================
-%% FRONTEND
-%% ===============================
-U[🧑‍💻 User / Frontend (React + Vite)]
-C[🌐 Coordinator API (FastAPI)]
+%% ========== FRONTEND ==========
+U[User / Frontend (React + Vite)]
+C[Coordinator API (FastAPI)]
 
-%% ===============================
-%% BACKEND CORE
-%% ===============================
-Q[(🔁 Redis Queue / RQ Workers)]
-DB[(🗄️ SQLite DB)]
-VDB[(🧩 Vector DB (Chroma / FAISS))]
+%% ========== BACKEND CORE ==========
+Q[(Redis Queue / RQ Workers)]
+DB[(SQLite Database)]
+VDB[(Vector DB - Chroma / FAISS)]
 
-%% ===============================
-%% AGENTS
-%% ===============================
-subgraph AGENTS[🤖 Multi-Agent Worker Pool]
+%% ========== AGENTS ==========
+subgraph AGENTS[Multi-Agent Worker Pool]
 BA[Backend Agent]
 FA[Frontend Agent]
 RA[Review Agent]
 end
 
-%% ===============================
-%% EXTERNAL SERVICES
-%% ===============================
-subgraph LLM[🔮 LLM Providers]
+%% ========== LLM PROVIDERS ==========
+subgraph LLM[LLM Providers]
 G[Gemini]
 O[Ollama]
 H[HuggingFace]
 end
 
-%% ===============================
-%% OUTPUT
-%% ===============================
-OUT[(📦 Generated Project\nFiles / Repo Artifacts)]
+%% ========== OUTPUT ==========
+OUT[(Generated Project Files / Artifacts)]
 
-%% ===============================
-%% FLOW CONNECTIONS
-%% ===============================
+%% ========== FLOW CONNECTIONS ==========
+U -->|1. Submit Project Brief| C
+C -->|2. Store Metadata| DB
+C -->|3. Decompose Tasks & Enqueue Jobs| Q
+Q -->|4. Dispatch Jobs| AGENTS
 
-U -->|1️⃣ Submit project brief| C
-C -->|2️⃣ Persist metadata| DB
-C -->|3️⃣ Decompose tasks & enqueue jobs| Q
-Q -->|4️⃣ Dispatch jobs| AGENTS
+AGENTS -->|Read/Write Context| VDB
+AGENTS -->|Call LLM APIs| LLM
+AGENTS -->|Return Generated Code| C
 
-%% Agents interacting with resources
-AGENTS -->|Read/write context| VDB
-AGENTS -->|LLM calls for code/content| LLM
-AGENTS -->|Return generated code| C
+C -->|5. Assemble Outputs| OUT
+OUT -->|6. Return Final Result| U
 
-%% Coordinator assembles project
-C -->|5️⃣ Assemble outputs| OUT
-OUT -->|6️⃣ Send final result| U
+RA -->|Quality Review & Feedback| Q
 
-%% Feedback / review loop
-RA -->|Quality check| Q
-
-%% Styling & grouping
-classDef agent fill:#f6faff,stroke:#90a4ae,stroke-width:1px;
-classDef db fill:#fff7e6,stroke:#d17d00,stroke-width:1px;
-classDef ext fill:#f5eaff,stroke:#8a2be2,stroke-width:1px;
-classDef core fill:#e6f7ff,stroke:#007acc,stroke-width:1px;
-classDef output fill:#e8ffe6,stroke:#00aa00,stroke-width:1px;
+%% ========== STYLES ==========
+classDef agent fill:#eef6ff,stroke:#4472c4,stroke-width:1px,color:#000;
+classDef db fill:#fff2cc,stroke:#d6b656,stroke-width:1px,color:#000;
+classDef core fill:#e1f5fe,stroke:#0288d1,stroke-width:1px,color:#000;
+classDef ext fill:#ede7f6,stroke:#673ab7,stroke-width:1px,color:#000;
+classDef output fill:#e8f5e9,stroke:#43a047,stroke-width:1px,color:#000;
 
 class AGENTS,BA,FA,RA agent;
 class Q,DB,VDB db;
-class LLM,G,O,H ext;
 class C core;
+class LLM,G,O,H ext;
 class OUT output;
 
 ```
