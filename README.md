@@ -30,7 +30,7 @@ This project implements an **AI Agent System** that converts a short, high-level
 ```mermaid
 flowchart TD
 
-%% Nodes (one per line)
+%% ===== Nodes =====
 U["User / Frontend<br/>React + Vite"]
 C["Coordinator API<br/>FastAPI"]
 DB["SQLite Database"]
@@ -38,21 +38,21 @@ Q["Redis Queue / RQ Workers"]
 VDB["Vector DB<br/>Chroma or FAISS"]
 OUT["Generated Project<br/>Files & Artifacts"]
 
-%% Agents as a subgraph (each agent on its own line)
+%% ===== Agents =====
 subgraph AGENTS
   BA["Backend Agent"]
   FA["Frontend Agent"]
   RA["Review Agent"]
 end
 
-%% LLM providers as a subgraph
+%% ===== LLM Providers =====
 subgraph LLM
   G["Gemini"]
   O["Ollama"]
   H["HuggingFace"]
 end
 
-%% Connections (each connection on its own line)
+%% ===== Connections =====
 U -->|1 Submit brief| C
 C -->|2 Store metadata| DB
 C -->|3 Decompose & enqueue tasks| Q
@@ -67,13 +67,18 @@ OUT -->|6 Deliver to user| U
 
 RA -->|Quality review / feedback| Q
 
-%% Minimal class styling (optional; GitHub supports this)
-classDef db fill:#fff2cc,stroke:#d6b656;
-classDef agent fill:#eef6ff,stroke:#4472c4;
-classDef ext fill:#ede7f6,stroke:#673ab7;
+%% ===== Styles (with black font color) =====
+classDef db fill:#fff2cc,stroke:#d6b656,color:#000;
+classDef agent fill:#eef6ff,stroke:#4472c4,color:#000;
+classDef ext fill:#ede7f6,stroke:#673ab7,color:#000;
+classDef core fill:#e1f5fe,stroke:#0288d1,color:#000;
+classDef output fill:#e8f5e9,stroke:#43a047,color:#000;
+
 class Q,DB,VDB db;
 class AGENTS,BA,FA,RA agent;
 class LLM,G,O,H ext;
+class C core;
+class OUT output;
 
 
 
