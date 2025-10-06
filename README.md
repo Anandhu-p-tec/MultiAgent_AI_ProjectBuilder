@@ -207,75 +207,86 @@ A single *Coordinator* (FastAPI) receives a brief from the frontend, decomposes 
 > Note: Real-time progress reporting to the frontend (SSE / WebSockets) is a common enhancement pattern but not necessarily implemented by default. If you want live progress, add a websocket/SSE endpoint and emit job status messages from the worker callbacks.
 
 ---
-
-## Folder overview (what each top folder does)
-- `backend/` — **FastAPI** app and orchestration code: endpoints, coordinator logic, LLM client wrappers, worker scripts, DB models, configuration and scripts to run the RQ workers and vector-store interactions. Run locally with:
-  ```bash
-  uvicorn backend.app.main:app --reload
-
-
-## 🚀 Quick Start (Windows)
-
-See `README-QUICKSTART.md` for PowerShell setup instructions.
-
-After setup:
-
-- Run backend: `uvicorn backend.app.main:app --reload`
-- Run frontend: `npm run dev`
-- Open browser: http://localhost:5173
-
----
-
-## 🧩 Folder Overview
-
-backend/ → FastAPI app, LLM logic, vector DB, worker
-frontend/ → React app (Vite + TS)
-.vscode/ → Recommended VS Code workspace setup
-.github/ → CI workflows
-
----
-
-## 🔐 Environment
-
-All configuration via `.env` file:
-
-```bash
-GEMINI_API_KEY=your_key_here
-OLLAMA_URL=http://localhost:11434
-HF_API_KEY=
-DATABASE_URL=sqlite:///./backend.db
+### 🚀 Quickstart (Local Setup)
 ```
+# 1. Clone the repository
+git clone https://github.com/<your-username>/multiagent-ai-project-builder.git
+cd multiagent-ai-project-builder
 
-🧰 Developer Tools
+# 2. Set up backend
+cd backend
+python -m venv venv
+source venv/bin/activate   # (or venv\Scripts\activate on Windows)
+pip install -r requirements.txt
+cp .env.example .env       # configure your API keys (Gemini, Ollama, etc.)
+uvicorn app.main:app --reload
 
-Linting & formatting: Black (Python), ESLint + Prettier (JS)
-
-Unit tests: pytest / vitest
-
-Docker Compose: optional Redis container
-
-Pre-commit hooks: recommended for CI parity
-🪶 License
-
-MIT — see LICENSE
-
----
-
-/README-QUICKSTART.md
-
-````markdown
-# Quickstart — Windows PowerShell Setup
-
-Follow these steps to run the MultiAgent AI Project Builder locally.
-
----
-
-## 1️⃣ Create & activate Python environment
-
-```powershell
-python -m venv .venv
-.\.venv\Scripts\Activate
-pip install --upgrade pip
-pip install -r backend/requirements.txt
+# 3. Set up frontend
+cd ../frontend
+npm install
+npm run dev
 ```
-````
+Frontend runs at:``` http://localhost:5173```
+Backend API runs at:``` http://localhost:8000```
+Make sure Redis is running before starting RQ workers:
+```
+redis-server
+rq worker
+```
+### 🧩 Environment Variables
+All configuration values are stored in .env (copy from .env.example).
+| Variable          | Description                                                         | Example                    |
+| ----------------- | ------------------------------------------------------------------- | -------------------------- |
+| `LLM_PROVIDER`    | Choose which LLM backend to use (`gemini`, `ollama`, `huggingface`) | `gemini`                   |
+| `GEMINI_API_KEY`  | Google Gemini API Key                                               | `your-gemini-key`          |
+| `OLLAMA_BASE_URL` | Local Ollama endpoint (if using local models)                       | `http://localhost:11434`   |
+| `CHROMA_PATH`     | Directory for vector database                                       | `./chroma_db`              |
+| `DATABASE_URL`    | SQLite/SQLAlchemy database URI                                      | `sqlite:///./project.db`   |
+| `REDIS_URL`       | Redis connection string                                             | `redis://localhost:6379/0` |
+
+### 🧠 Agent Execution Logic (Internal Overview)
+
+| Agent                 | Purpose                             | Core Functions           | Output                |
+| --------------------- | ----------------------------------- | ------------------------ | --------------------- |
+| **Coordinator Agent** | Oversees everything                 | `coordinator.py`         | Orchestrated job flow |
+| **Backend Agent**     | Generates FastAPI, DB, logic        | `task_builder.py` + LLM  | Backend source files  |
+| **Frontend Agent**    | Generates React components          | `task_builder.py` + LLM  | Frontend source files |
+| **Review Agent**      | Validates code, provides feedback   | `review_agent` (planned) | Refined artifacts     |
+| **LLM Adapter**       | Interfaces with LLM APIs            | `llm_adapter.py`         | Model responses       |
+| **VectorDB Manager**  | Manages embeddings & search context | `database.py`            | Context persistence   |
+
+**Agents typically:**
+Fetch task payload from Redis.
+
+Query LLM via adapter.
+
+Generate code or documentation.
+
+Save outputs in /generated_projects/.
+
+Report success/failure to Coordinator.
+
+### 🧰 API Endpoints (FastAPI)
+| Endpoint                   | Method | Description                                                |
+| -------------------------- | ------ | ---------------------------------------------------------- |
+| `/api/brief/submit`        | `POST` | Accepts a user project brief and starts task decomposition |
+| `/api/brief/status/{id}`   | `GET`  | Checks the progress or status of a project build           |
+| `/api/brief/download/{id}` | `GET`  | Returns a ZIP of the generated project files               |
+| `/api/health`              | `GET`  | Basic health/status check of backend                       |
+
+You can explore all endpoints via Swagger UI at
+👉 `http://localhost:8000/docs`
+### 🧪 Testing
+To run unit tests for backend components:
+```
+cd backend
+pytest -v
+```
+Tests are located in /backend/tests/, including:
+
+API endpoint validation (test_api.py)
+
+Model and DB schema checks
+
+Task flow and LLM adapter tests (extendable)
+
