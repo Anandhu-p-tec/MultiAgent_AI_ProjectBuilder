@@ -4,7 +4,7 @@ This project implements an **AI Agent System** that converts a short, high-level
 
 ## 🎥 Demo Video
 
-[![Watch the demo](https://img.youtube.com/vi/4Kp4FD7a26A/hqdefault.jpg)](https://youtu.be/4Kp4FD7a26A)
+[(https://img.youtube.com/vi/4Kp4FD7a26A/hqdefault.jpg)](https://youtu.be/4Kp4FD7a26A) 
 
 
 
