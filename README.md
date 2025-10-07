@@ -3,7 +3,9 @@
 This project implements an **AI Agent System** that converts a short, high-level project brief into a set of concrete technical tasks, then uses specialized sub-agents to generate code for each component.
 
 ## 🎥 Demo Video
-[![Watch the demo](https://img.youtube.com/vi/4Kp4FD7a26A/maxresdefault.jpg)](https://youtu.be/4Kp4FD7a26A)
+
+[![Watch the demo](https://img.youtube.com/vi/4Kp4FD7a26A/hqdefault.jpg)](https://youtu.be/4Kp4FD7a26A)
+
 
 
 ## 🧠 Architecture Overview
